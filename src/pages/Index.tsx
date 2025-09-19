@@ -240,7 +240,7 @@ const Index = () => {
                 <p className="text-sm text-muted-foreground">Quote/Invoice/Receipt Generator</p>
               </div>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex flex-col md:flex-row items-center gap-2">
               <SavedDocuments onEditDocument={handleEditDocument} />
               <DocumentTypeSelector
                 documentType={documentType} 
