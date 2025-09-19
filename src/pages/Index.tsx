@@ -233,14 +233,14 @@ const Index = () => {
           <div className="flex flex-col md:flex-row items-start md:items-center justify-between">
             <div className="flex items-center gap-3">
               <div className="h-10 w-10 rounded-lg bg-primary flex items-center justify-center">
-                <FileText className="h-6 w-6 text-primary-foreground" />
+                {/* <FileText className="h-6 w-6 text-primary-foreground" /> */}
               </div>
               <div>
                 <h1 className="text-2xl font-bold text-foreground">Xamtastic Electric</h1>
                 <p className="text-sm text-muted-foreground">Quote/Invoice/Receipt Generator</p>
               </div>
             </div>
-            <div className="flex flex-col md:flex-row items-center gap-2">
+            <div className="flex flex-col md:flex-row items-start md:items-center gap-2">
               <SavedDocuments onEditDocument={handleEditDocument} />
               <DocumentTypeSelector
                 documentType={documentType} 
