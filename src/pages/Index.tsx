@@ -233,7 +233,7 @@ const Index = () => {
           <div className="flex flex-col md:flex-row items-start md:items-center justify-between">
             <div className="flex items-center gap-3">
               <div className="h-10 w-10 rounded-lg bg-primary flex items-center justify-center">
-                {/* <FileText className="h-6 w-6 text-primary-foreground" /> */}
+                <img src="/public/icon.jpeg" className="h-6 w-6 text-primary-foreground" />
               </div>
               <div>
                 <h1 className="text-2xl font-bold text-foreground">Xamtastic Electric</h1>
