@@ -13,6 +13,7 @@ import { saveDocument, updateDocument, type SavedDocument } from "@/lib/utils/st
 import { FileText, Download, Receipt, Calculator, Save, Image } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import html2canvas from "html2canvas";
+import iconjpeg from '../../public/icon.jpeg';
 import type { DocumentType, BusinessInfo, ClientInfo, LineItem } from "@/types";
 
 const Index = () => {
@@ -233,7 +234,7 @@ const Index = () => {
           <div className="flex flex-col md:flex-row items-start md:items-center justify-between">
             <div className="flex items-center gap-3">
               <div className="h-10 w-10 flex items-center justify-center">
-                <img src="/public/icon.jpeg" className="h-6 w-6" />
+                <img src={iconjpeg} className="h-6 w-6" />
               </div>
               <div>
                 <h1 className="text-2xl font-bold text-foreground">Xamtastic Electric</h1>
