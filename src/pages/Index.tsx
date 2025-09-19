@@ -229,8 +229,8 @@ const Index = () => {
     <div className="min-h-screen bg-gradient-to-br from-background to-muted">
       {/* Header */}
       <header className="border-b bg-card/80 backdrop-blur-sm sticky top-0 z-10">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex flex-col md:flex-row items-center justify-between">
+        <div className="container md:mx-auto px-4 py-4">
+          <div className="flex flex-col md:flex-row items-start md:items-center justify-between">
             <div className="flex items-center gap-3">
               <div className="h-10 w-10 rounded-lg bg-primary flex items-center justify-center">
                 <FileText className="h-6 w-6 text-primary-foreground" />
