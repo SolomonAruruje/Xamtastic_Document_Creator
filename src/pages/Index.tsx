@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -47,6 +47,20 @@ const Index = () => {
   const [notes, setNotes] = useState("");
   const [vatRate, setVatRate] = useState(0);
   const [editingDocumentId, setEditingDocumentId] = useState<string | null>(null);
+
+  // Load notes from localStorage on component mount
+  useEffect(() => {
+    const savedNotes = localStorage.getItem('document_notes');
+    if (savedNotes && notes === "") {
+      setNotes(savedNotes);
+    }
+  }, []);
+
+  // Save notes to localStorage whenever they change
+  const handleNotesChange = (newNotes: string) => {
+    setNotes(newNotes);
+    localStorage.setItem('document_notes', newNotes);
+  };
 
   const subtotal = lineItems.reduce((sum, item) => sum + item.amount, 0);
   const vatAmount = subtotal * (vatRate / 100);
@@ -345,7 +359,7 @@ const Index = () => {
                       dueDate={dueDate}
                       onDueDateChange={setDueDate}
                       notes={notes}
-                      onNotesChange={setNotes}
+                      onNotesChange={handleNotesChange}
                       vatRate={vatRate}
                       onVatRateChange={setVatRate}
                       documentType={documentType}
