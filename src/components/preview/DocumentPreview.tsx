@@ -125,23 +125,28 @@ export const DocumentPreview = ({
       {/* Line Items */}
       <div className="mb-8">
         <div className="bg-gray-50 border rounded-lg overflow-hidden">
-          <div className="grid grid-cols-12 gap-4 p-4 bg-gray-100 font-semibold text-sm">
-            <div className="col-span-6">Description</div>
-            <div className="col-span-2 text-center">Quantity</div>
-            <div className="col-span-2 text-center">Rate</div>
-            <div className="col-span-2 text-right">Amount</div>
-          </div>
-          
-          {lineItems.map((item, index) => (
-            <div key={item.id} className={`grid grid-cols-12 gap-4 p-4 text-sm ${
-              index % 2 === 0 ? 'bg-white' : 'bg-gray-50'
-            }`}>
-            <div className="col-span-6">{item.description || 'Item description'}</div>
-            <div className="col-span-2 text-center">{item.quantity}</div>
-            <div className="col-span-2 text-center">₦{formatCurrency(item.rate)}</div>
-            <div className="col-span-2 text-right font-medium">₦{formatCurrency(item.amount)}</div>
-            </div>
-          ))}
+          <table className="w-full">
+            <thead>
+              <tr className="bg-gray-100">
+                <th className="p-4 text-left font-semibold text-sm">Description</th>
+                <th className="p-4 text-center font-semibold text-sm whitespace-nowrap">Quantity</th>
+                <th className="p-4 text-center font-semibold text-sm whitespace-nowrap">Rate</th>
+                <th className="p-4 text-right font-semibold text-sm whitespace-nowrap">Amount</th>
+              </tr>
+            </thead>
+            <tbody>
+              {lineItems.map((item, index) => (
+                <tr key={item.id} className={`text-sm ${
+                  index % 2 === 0 ? 'bg-white' : 'bg-gray-50'
+                }`}>
+                  <td className="p-4 break-words">{item.description || 'Item description'}</td>
+                  <td className="p-4 text-center whitespace-nowrap">{item.quantity}</td>
+                  <td className="p-4 text-center whitespace-nowrap">₦{formatCurrency(item.rate)}</td>
+                  <td className="p-4 text-right font-medium whitespace-nowrap">₦{formatCurrency(item.amount)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
       </div>
 
