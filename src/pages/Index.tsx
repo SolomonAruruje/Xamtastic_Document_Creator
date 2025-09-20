@@ -282,7 +282,7 @@ const Index = () => {
 
       {/* Main Content */}
       <div className="container mx-auto px-4 py-8">
-        <div className="grid grid-cols-2 gap-8">
+        <div className="space-y-8">
           {/* Forms Section */}
           <div className="space-y-6">
             <Tabs defaultValue="business" className="w-full">
@@ -357,7 +357,7 @@ const Index = () => {
           </div>
 
           {/* Preview Section */}
-          <div className="sticky top-24 h-fit">
+          <div>
             <Card className="shadow-xl border-0 bg-card/50 backdrop-blur-sm">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
