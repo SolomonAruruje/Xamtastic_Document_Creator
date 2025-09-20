@@ -13,7 +13,6 @@ import { saveDocument, updateDocument, type SavedDocument } from "@/lib/utils/st
 import { FileText, Download, Receipt, Calculator, Save, Image } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import html2canvas from "html2canvas";
-import iconjpeg from '../../public/icon.jpeg';
 import type { DocumentType, BusinessInfo, ClientInfo, LineItem } from "@/types";
 
 const Index = () => {
@@ -230,18 +229,18 @@ const Index = () => {
     <div className="min-h-screen bg-gradient-to-br from-background to-muted">
       {/* Header */}
       <header className="border-b bg-card/80 backdrop-blur-sm sticky top-0 z-10">
-        <div className="container md:mx-auto px-4 py-4">
-          <div className="flex flex-col md:flex-row items-start md:items-center justify-between">
+        <div className="container mx-auto px-4 py-4">
+          <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="h-10 w-10 bg-white border border-orange-500 rounded-sm flex items-center justify-center">
-                <img src={iconjpeg} className="h-8" />
+              <div className="h-10 w-10 rounded-lg bg-primary flex items-center justify-center">
+                <FileText className="h-6 w-6 text-primary-foreground" />
               </div>
               <div>
                 <h1 className="text-2xl font-bold text-foreground">Xamtastic Electric</h1>
                 <p className="text-sm text-muted-foreground">Quote/Invoice/Receipt Generator</p>
               </div>
             </div>
-            <div className="flex flex-col md:flex-row items-start md:items-center gap-2">
+            <div className="flex items-center gap-2">
               <SavedDocuments onEditDocument={handleEditDocument} />
               <DocumentTypeSelector
                 documentType={documentType} 
@@ -278,7 +277,7 @@ const Index = () => {
 
       {/* Main Content */}
       <div className="container mx-auto px-4 py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <div className="grid grid-cols-2 gap-8">
           {/* Forms Section */}
           <div className="space-y-6">
             <Tabs defaultValue="business" className="w-full">
@@ -353,7 +352,7 @@ const Index = () => {
           </div>
 
           {/* Preview Section */}
-          <div className="lg:sticky lg:top-24 lg:h-fit">
+          <div className="sticky top-24 h-fit">
             <Card className="shadow-xl border-0 bg-card/50 backdrop-blur-sm">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
