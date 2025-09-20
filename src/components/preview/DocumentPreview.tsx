@@ -1,394 +1,191 @@
-import { useState, useRef } from "react";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { BusinessForm } from "@/components/forms/BusinessForm";
-import { ClientForm } from "@/components/forms/ClientForm";
-import { LineItemsForm } from "@/components/forms/LineItemsForm";
-import { DocumentPreview } from "@/components/preview/DocumentPreview";
-import { DocumentTypeSelector } from "@/components/DocumentTypeSelector";
-import { SavedDocuments } from "@/components/SavedDocuments";
-import { generatePDF } from "@/lib/pdfGenerator";
-import { saveDocument, updateDocument, type SavedDocument } from "@/lib/utils/storage";
-import { FileText, Download, Receipt, Calculator, Save, Image } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
-import html2canvas from "html2canvas";
+import { Card } from "@/components/ui/card";
+import { Separator } from "@/components/ui/separator";
+import { formatCurrency } from "@/lib/utils/formatting";
 import type { DocumentType, BusinessInfo, ClientInfo, LineItem } from "@/types";
 
-const Index = () => {
-  const { toast } = useToast();
-  const previewRef = useRef<HTMLDivElement>(null);
-  const [documentType, setDocumentType] = useState<DocumentType>("invoice");
-  const [businessInfo, setBusinessInfo] = useState<BusinessInfo>({
-    name: "",
-    address: "",
-    city: "",
-    postalCode: "",
-    phone: "",
-    email: "",
-    website: "",
-    taxId: "",
-    logo: "",
-  });
-  const [clientInfo, setClientInfo] = useState<ClientInfo>({
-    name: "",
-    address: "",
-    city: "",
-    postalCode: "",
-    email: "",
-    phone: "",
-  });
-  const [lineItems, setLineItems] = useState<LineItem[]>([
-    { id: "1", description: "", quantity: 1, rate: 0, amount: 0 }
-  ]);
-  const [documentNumber, setDocumentNumber] = useState("001");
-  const [dateIssued, setDateIssued] = useState(new Date().toISOString().split('T')[0]);
-  const [dueDate, setDueDate] = useState("");
-  const [notes, setNotes] = useState("");
-  const [vatRate, setVatRate] = useState(0);
-  const [editingDocumentId, setEditingDocumentId] = useState<string | null>(null);
+interface DocumentPreviewProps {
+  documentType: DocumentType;
+  businessInfo: BusinessInfo;
+  clientInfo: ClientInfo;
+  lineItems: LineItem[];
+  documentNumber: string;
+  dateIssued: string;
+  dueDate: string;
+  notes: string;
+  subtotal: number;
+  vatRate: number;
+  vatAmount: number;
+  total: number;
+}
 
-  const subtotal = lineItems.reduce((sum, item) => sum + item.amount, 0);
-  const vatAmount = subtotal * (vatRate / 100);
-  const total = subtotal + vatAmount;
-
-  const resetToFreshInvoice = () => {
-    // Reset all form fields except business info
-    setClientInfo({
-      name: "",
-      address: "",
-      city: "",
-      postalCode: "",
-      email: "",
-      phone: "",
+export const DocumentPreview = ({
+  documentType,
+  businessInfo,
+  clientInfo,
+  lineItems,
+  documentNumber,
+  dateIssued,
+  dueDate,
+  notes,
+  subtotal,
+  vatRate,
+  vatAmount,
+  total,
+}: DocumentPreviewProps) => {
+  const formatDate = (dateString: string) => {
+    if (!dateString) return '';
+    return new Date(dateString).toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
     });
-    setLineItems([
-      { id: "1", description: "", quantity: 1, rate: 0, amount: 0 }
-    ]);
-    setDateIssued(new Date().toISOString().split('T')[0]);
-    setDueDate("");
-    setNotes("");
-    setVatRate(0);
-    setEditingDocumentId(null);
-    
-    // Increment document number
-    const currentNum = parseInt(documentNumber) || 0;
-    setDocumentNumber(String(currentNum + 1).padStart(3, '0'));
   };
 
-  const handleDownloadPDF = async () => {
-    try {
-      const documentData = {
-        documentType,
-        businessInfo,
-        clientInfo,
-        lineItems,
-        documentNumber,
-        dateIssued,
-        dueDate,
-        notes,
-        subtotal,
-        vatRate,
-        vatAmount,
-        total,
-      };
-      
-      // Save or update document first
-      if (editingDocumentId) {
-        updateDocument(editingDocumentId, documentData);
-      } else {
-        saveDocument(documentData);
-      }
-      
-      // Then generate PDF
-      await generatePDF(documentData);
-      
-      toast({
-        title: "PDF Generated & Saved!",
-        description: `Your ${documentType} has been downloaded and saved. Starting fresh ${documentType}.`,
-      });
-      
-      // Reset to fresh invoice with incremented number
-      resetToFreshInvoice();
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to generate PDF. Please try again.",
-        variant: "destructive",
-      });
+  const getDocumentTitle = () => {
+    switch (documentType) {
+      case 'invoice': return 'INVOICE';
+      case 'quotation': return 'QUOTATION';
+      case 'receipt': return 'RECEIPT';
+      default: return 'DOCUMENT';
     }
   };
 
-  const handleDownloadImage = async () => {
-    if (!previewRef.current) return;
-    
-    try {
-      const documentData = {
-        documentType,
-        businessInfo,
-        clientInfo,
-        lineItems,
-        documentNumber,
-        dateIssued,
-        dueDate,
-        notes,
-        subtotal,
-        vatRate,
-        vatAmount,
-        total,
-      };
-      
-      // Save or update document first
-      if (editingDocumentId) {
-        updateDocument(editingDocumentId, documentData);
-      } else {
-        saveDocument(documentData);
-      }
-      
-      const canvas = await html2canvas(previewRef.current, {
-        scale: 2,
-        backgroundColor: '#ffffff',
-        useCORS: true,
-        allowTaint: true,
-      });
-      
-      const link = document.createElement('a');
-      link.download = `${documentType}_${documentNumber || 'XXX'}.png`;
-      link.href = canvas.toDataURL();
-      link.click();
-      
-      toast({
-        title: "Image Downloaded & Saved!",
-        description: `Your ${documentType} has been downloaded as an image and saved. Starting fresh ${documentType}.`,
-      });
-      
-      // Reset to fresh invoice with incremented number
-      resetToFreshInvoice();
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to generate image. Please try again.",
-        variant: "destructive",
-      });
+  const getDocumentLabel = () => {
+    switch (documentType) {
+      case 'invoice': return 'Invoice';
+      case 'quotation': return 'Quote';
+      case 'receipt': return 'Receipt';
+      default: return 'Document';
     }
-  };
-
-  const handleSaveDocument = () => {
-    try {
-      const documentData = {
-        documentType,
-        businessInfo,
-        clientInfo,
-        lineItems,
-        documentNumber,
-        dateIssued,
-        dueDate,
-        notes,
-        subtotal,
-        vatRate,
-        vatAmount,
-        total,
-      };
-      
-      if (editingDocumentId) {
-        updateDocument(editingDocumentId, documentData);
-      } else {
-        saveDocument(documentData);
-      }
-      
-      toast({
-        title: "Document Saved!",
-        description: `Your ${documentType} has been saved successfully.`,
-      });
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to save document. Please try again.",
-        variant: "destructive",
-      });
-    }
-  };
-
-  const handleEditDocument = (document: SavedDocument) => {
-    const data = document.documentData;
-    
-    // Load all the form data from the saved document
-    setDocumentType(data.documentType);
-    setBusinessInfo(data.businessInfo);
-    setClientInfo(data.clientInfo);
-    setLineItems(data.lineItems);
-    setDocumentNumber(data.documentNumber);
-    setDateIssued(data.dateIssued);
-    setDueDate(data.dueDate);
-    setNotes(data.notes);
-    setVatRate(data.vatRate);
-    setEditingDocumentId(document.id);
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background to-muted">
+    <div className="w-full max-w-4xl mx-auto bg-white rounded-lg shadow-sm border p-8 text-gray-900 min-h-[600px]">
       {/* Header */}
-      <header className="border-b bg-card/80 backdrop-blur-sm sticky top-0 z-10">
-        <div className="container mx-auto px-4 py-4">
-          {/* First Row: Title and Document Type Selector */}
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-3">
-              <div className="h-10 w-10 rounded-lg bg-primary flex items-center justify-center">
-                <FileText className="h-6 w-6 text-primary-foreground" />
-              </div>
-              <div>
-                <h1 className="text-2xl font-bold text-foreground">Xamtastic Electric</h1>
-                <p className="text-sm text-muted-foreground">Quote/Invoice/Receipt Generator</p>
-              </div>
-            </div>
-            <div className="flex items-center gap-2">
-              <SavedDocuments onEditDocument={handleEditDocument} />
-              <DocumentTypeSelector
-                documentType={documentType} 
-                onDocumentTypeChange={setDocumentType} 
-              />
-            </div>
-          </div>
-          
-          {/* Second Row: Action Buttons */}
-          <div className="flex justify-end gap-2">
-            <Button 
-              onClick={handleSaveDocument}
-              variant="outline"
-              size="lg"
-            >
-              <Save className="h-4 w-4 mr-2" />
-              Save
-            </Button>
-            <Button 
-              onClick={handleDownloadImage}
-              variant="outline"
-              size="lg"
-            >
-              <Image className="h-4 w-4 mr-2" />
-              Download Image
-            </Button>
-            <Button 
-              onClick={handleDownloadPDF}
-              className="bg-primary hover:bg-primary/90 shadow-lg"
-              size="lg"
-            >
-              <Download className="h-4 w-4 mr-2" />
-              Download PDF
-            </Button>
+      <div className="flex justify-between items-start mb-8">
+        <div>
+          <h1 className="text-3xl font-bold text-primary mb-2">{getDocumentTitle()}</h1>
+          <div className="text-sm space-y-1">
+            <p><span className="font-medium">{getDocumentLabel()} #:</span> {documentNumber || 'XXX'}</p>
+            <p><span className="font-medium">
+              {documentType === 'receipt' ? 'Date:' : 'Date Issued:'}
+            </span> {formatDate(dateIssued) || 'Not set'}</p>
+            {documentType !== 'receipt' && dueDate && (
+              <p><span className="font-medium">
+                {documentType === 'quotation' ? 'Valid Until:' : 'Due Date:'}
+              </span> {formatDate(dueDate)}</p>
+            )}
           </div>
         </div>
-      </header>
-
-      {/* Main Content */}
-      <div className="container mx-auto px-4 py-8">
-        <div className="grid grid-cols-2 gap-8">
-          {/* Forms Section */}
-          <div className="space-y-6">
-            <Tabs defaultValue="business" className="w-full">
-              <TabsList className="grid w-full grid-cols-3 bg-muted/50">
-                <TabsTrigger value="business" className="flex items-center gap-2">
-                  <Receipt className="h-4 w-4" />
-                  Business
-                </TabsTrigger>
-                <TabsTrigger value="client" className="flex items-center gap-2">
-                  <FileText className="h-4 w-4" />
-                  Client
-                </TabsTrigger>
-                <TabsTrigger value="items" className="flex items-center gap-2">
-                  <Calculator className="h-4 w-4" />
-                  Items
-                </TabsTrigger>
-              </TabsList>
-              
-              <TabsContent value="business" className="mt-6">
-                <Card className="shadow-lg border-0 bg-card/50 backdrop-blur-sm">
-                  <CardHeader>
-                    <CardTitle>Business Information</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <BusinessForm 
-                      businessInfo={businessInfo} 
-                      onBusinessInfoChange={setBusinessInfo} 
-                    />
-                  </CardContent>
-                </Card>
-              </TabsContent>
-              
-              <TabsContent value="client" className="mt-6">
-                <Card className="shadow-lg border-0 bg-card/50 backdrop-blur-sm">
-                  <CardHeader>
-                    <CardTitle>Client Information</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <ClientForm 
-                      clientInfo={clientInfo} 
-                      onClientInfoChange={setClientInfo} 
-                    />
-                  </CardContent>
-                </Card>
-              </TabsContent>
-              
-              <TabsContent value="items" className="mt-6">
-                <Card className="shadow-lg border-0 bg-card/50 backdrop-blur-sm">
-                  <CardHeader>
-                    <CardTitle>Line Items & Details</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <LineItemsForm
-                      lineItems={lineItems}
-                      onLineItemsChange={setLineItems}
-                      documentNumber={documentNumber}
-                      onDocumentNumberChange={setDocumentNumber}
-                      dateIssued={dateIssued}
-                      onDateIssuedChange={setDateIssued}
-                      dueDate={dueDate}
-                      onDueDateChange={setDueDate}
-                      notes={notes}
-                      onNotesChange={setNotes}
-                      vatRate={vatRate}
-                      onVatRateChange={setVatRate}
-                      documentType={documentType}
-                    />
-                  </CardContent>
-                </Card>
-              </TabsContent>
-            </Tabs>
-          </div>
-
-          {/* Preview Section */}
-          <div className="sticky top-24 h-fit">
-            <Card className="shadow-xl border-0 bg-card/50 backdrop-blur-sm">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <FileText className="h-5 w-5" />
-                  Document Preview
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div ref={previewRef}>
-                  <DocumentPreview
-                    documentType={documentType}
-                    businessInfo={businessInfo}
-                    clientInfo={clientInfo}
-                    lineItems={lineItems}
-                    documentNumber={documentNumber}
-                    dateIssued={dateIssued}
-                    dueDate={dueDate}
-                    notes={notes}
-                    subtotal={subtotal}
-                    vatRate={vatRate}
-                    vatAmount={vatAmount}
-                    total={total}
-                  />
-                </div>
-              </CardContent>
-            </Card>
+        
+        <div className="text-right">
+          {businessInfo.logo && (
+            <div className="flex justify-end mb-1">
+              <img
+                src={businessInfo.logo} 
+                alt="Company Logo" 
+                className="h-20 w-40 object-contain"
+              />
+            </div>
+          )}
+          <div>
+            <div className="font-bold text-lg mb-2">{businessInfo.name || 'Your Business'}</div>
+            <div className="text-sm space-y-1 text-gray-600">
+              {businessInfo.address && <p>{businessInfo.address}</p>}
+              {(businessInfo.city || businessInfo.postalCode) && (
+                <p>{businessInfo.city} {businessInfo.postalCode}</p>
+              )}
+              {businessInfo.phone && <p>{businessInfo.phone}</p>}
+              {businessInfo.email && <p>{businessInfo.email}</p>}
+              {businessInfo.website && <p>{businessInfo.website}</p>}
+              {businessInfo.taxId && <p>Tax ID: {businessInfo.taxId}</p>}
+            </div>
           </div>
         </div>
       </div>
+
+      <Separator className="my-6" />
+
+      {/* Bill To */}
+      <div className="mb-8">
+        <h3 className="font-semibold text-lg mb-3">
+          {documentType === 'receipt' ? 'Received From:' : 'Bill To:'}
+        </h3>
+        <div className="text-sm space-y-1">
+          <p className="font-medium">{clientInfo.name || 'Client Name'}</p>
+          {clientInfo.address && <p>{clientInfo.address}</p>}
+          {(clientInfo.city || clientInfo.postalCode) && (
+            <p>{clientInfo.city} {clientInfo.postalCode}</p>
+          )}
+          {clientInfo.email && <p>{clientInfo.email}</p>}
+          {clientInfo.phone && <p>{clientInfo.phone}</p>}
+        </div>
+      </div>
+
+      {/* Line Items */}
+      <div className="mb-8">
+        <div className="bg-gray-50 border rounded-lg overflow-hidden">
+          <table className="w-full">
+            <thead>
+              <tr className="bg-gray-100">
+                <th className="p-4 text-left font-semibold text-sm">Description</th>
+                <th className="p-4 text-center font-semibold text-sm whitespace-nowrap">Quantity</th>
+                <th className="p-4 text-center font-semibold text-sm whitespace-nowrap">Rate</th>
+                <th className="p-4 text-right font-semibold text-sm whitespace-nowrap">Amount</th>
+              </tr>
+            </thead>
+            <tbody>
+              {lineItems.map((item, index) => (
+                <tr key={item.id} className={`text-sm ${
+                  index % 2 === 0 ? 'bg-white' : 'bg-gray-50'
+                }`}>
+                  <td className="p-4 break-words">{item.description || 'Item description'}</td>
+                  <td className="p-4 text-center whitespace-nowrap">{item.quantity}</td>
+                  <td className="p-4 text-center whitespace-nowrap">₦{formatCurrency(item.rate)}</td>
+                  <td className="p-4 text-right font-medium whitespace-nowrap">₦{formatCurrency(item.amount)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      {/* Totals */}
+      <div className="flex justify-end mb-8">
+        <div className="w-64 space-y-2">
+          <div className="flex justify-between">
+            <span>Subtotal:</span>
+            <span>₦{formatCurrency(subtotal)}</span>
+          </div>
+          {vatRate > 0 && (
+            <div className="flex justify-between">
+              <span>VAT ({vatRate}%):</span>
+              <span>₦{formatCurrency(vatAmount)}</span>
+            </div>
+          )}
+          <Separator />
+          <div className="flex justify-between font-bold text-lg">
+            <span>Total:</span>
+            <span>₦{formatCurrency(total)}</span>
+          </div>
+        </div>
+      </div>
+
+      {/* Notes */}
+      {notes && (
+        <div className="border-t pt-6">
+          <h4 className="font-semibold mb-2">Notes:</h4>
+          <p className="text-sm text-gray-600 whitespace-pre-wrap">{notes}</p>
+        </div>
+      )}
+      
+      {!notes && (
+        <div className="border-t pt-6">
+          <p className="text-xs text-gray-400 italic">
+            Add notes in the Items tab to include additional terms or information.
+          </p>
+        </div>
+      )}
     </div>
   );
 };
-
-export default Index;

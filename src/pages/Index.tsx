@@ -230,7 +230,8 @@ const Index = () => {
       {/* Header */}
       <header className="border-b bg-card/80 backdrop-blur-sm sticky top-0 z-10">
         <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
+          {/* First Row: Title and Document Type Selector */}
+          <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-3">
               <div className="h-10 w-10 rounded-lg bg-primary flex items-center justify-center">
                 <FileText className="h-6 w-6 text-primary-foreground" />
@@ -246,31 +247,35 @@ const Index = () => {
                 documentType={documentType} 
                 onDocumentTypeChange={setDocumentType} 
               />
-              <Button 
-                onClick={handleSaveDocument}
-                variant="outline"
-                size="lg"
-              >
-                <Save className="h-4 w-4 mr-2" />
-                Save
-              </Button>
-              <Button 
-                onClick={handleDownloadImage}
-                variant="outline"
-                size="lg"
-              >
-                <Image className="h-4 w-4 mr-2" />
-                Download Image
-              </Button>
-              <Button 
-                onClick={handleDownloadPDF}
-                className="bg-primary hover:bg-primary/90 shadow-lg"
-                size="lg"
-              >
-                <Download className="h-4 w-4 mr-2" />
-                Download PDF
-              </Button>
             </div>
+          </div>
+          
+          {/* Second Row: Action Buttons */}
+          <div className="flex justify-end gap-2">
+            <Button 
+              onClick={handleSaveDocument}
+              variant="outline"
+              size="lg"
+            >
+              <Save className="h-4 w-4 mr-2" />
+              Save
+            </Button>
+            <Button 
+              onClick={handleDownloadImage}
+              variant="outline"
+              size="lg"
+            >
+              <Image className="h-4 w-4 mr-2" />
+              Download Image
+            </Button>
+            <Button 
+              onClick={handleDownloadPDF}
+              className="bg-primary hover:bg-primary/90 shadow-lg"
+              size="lg"
+            >
+              <Download className="h-4 w-4 mr-2" />
+              Download PDF
+            </Button>
           </div>
         </div>
       </header>
